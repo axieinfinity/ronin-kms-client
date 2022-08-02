@@ -24,10 +24,10 @@ const SuccessCode = 1
 var ErrAccessDenied = errors.New("KMS VM access denied")
 
 type KmsSign struct {
-	connection  *grpc.ClientConn
-	keyToken    []byte
-	address     common.Address
-	signTimeout int64
+	Connection  *grpc.ClientConn
+	KeyToken    []byte
+	Address     common.Address
+	SignTimeout int64
 }
 
 type KmsConfig struct {
@@ -104,22 +104,22 @@ func NewKmsSign(kmsConfig *KmsConfig) (*KmsSign, error) {
 	log.Info("[KMS] Siging account", "address", address)
 
 	return &KmsSign{
-		connection:  conn,
-		keyToken:    keyToken,
-		address:     address,
-		signTimeout: kmsConfig.SignTimeout,
+		Connection:  conn,
+		KeyToken:    keyToken,
+		Address:     address,
+		SignTimeout: kmsConfig.SignTimeout,
 	}, nil
 }
 
 // Sign function receives raw message, not hash of message
 func (kmsSign *KmsSign) Sign(message []byte, dataType string) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(kmsSign.signTimeout*int64(time.Millisecond)))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(kmsSign.SignTimeout*int64(time.Millisecond)))
 	defer cancel()
 
-	resp, err := vkms.NewUserClient(kmsSign.connection).Sign(
+	resp, err := vkms.NewUserClient(kmsSign.Connection).Sign(
 		metadata.AppendToOutgoingContext(ctx, "vkms_data_type", dataType),
 		&vkms.SignRequest{
-			KeyUsageToken: kmsSign.keyToken,
+			KeyUsageToken: kmsSign.KeyToken,
 			Data:          message,
 		},
 	)
